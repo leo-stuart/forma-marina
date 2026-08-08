@@ -542,9 +542,72 @@ td.num { font-variant-numeric: tabular-nums; }
 /* O `section` global reserva clamp(72px, 13vh, 140px) em cima e embaixo, que é
    o respiro certo entre seções do convite mas vira vazio numa página própria. */
 .pagina-compacta { padding: clamp(30px, 5vh, 52px) 0 clamp(32px, 5vh, 56px); }
-.pagina-compacta .look-grid { padding-bottom: clamp(16px, 2.5vh, 28px); }
-/* os width/height do <img> reservam o espaço; height:auto mantém responsivo */
-.pagina-compacta .look-grid img { height: auto; }
+/* ---------- grade da galeria ----------
+   O `.look-grid` original é multicol (`columns: 2`). Com poucas fotos o
+   balanceamento do navegador empilha tudo numa coluna só e deixa a outra
+   vazia. Aqui vira grid explícito: duas colunas sempre, independente da
+   quantidade. Escopo em .pagina-compacta porque o guia de looks do convite
+   usa o mesmo .look-grid e não pode mudar. */
+.pagina-compacta .look-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(14px, 2.5vw, 28px);
+  align-items: start;
+  padding-bottom: clamp(16px, 2.5vh, 28px);
+}
+@media (min-width: 900px) {
+  .pagina-compacta .look-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* A proporção fica na célula, não na imagem: o espaço é reservado antes do
+   download (é o que impede a rolagem infinita de puxar tudo de uma vez) e
+   funciona também para fotos antigas, sem largura/altura gravadas. */
+.foto-tile {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line-soft);
+  background: var(--paper-soft);
+  margin: 0;
+}
+.foto-tile img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  opacity: 0;
+  transition: opacity 0.45s ease;
+  margin: 0;
+  border: none;
+}
+.foto-tile.carregada img { opacity: 1; }
+.foto-tile.carregada { background: transparent; }
+.foto-tile.carregada .esqueleto-brilho { display: none; }
+
+/* Esqueleto: --paper-soft já existia no :root sem uso — é exatamente o tom
+   de papel um passo mais escuro que este estado pede. */
+.esqueleto-brilho {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.esqueleto-brilho::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(243, 241, 236, 0.75) 50%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  animation: brilho 1.5s ease-in-out infinite;
+}
+@keyframes brilho {
+  to { transform: translateX(100%); }
+}
 .pagina-compacta .look-cta { margin-top: clamp(22px, 3.5vh, 34px); }
 .pagina-compacta .look-cta .inline-link + .inline-link { margin-top: 10px; }
 
@@ -734,6 +797,8 @@ label.btn:focus-within { outline: 2px solid var(--sky); outline-offset: 3px; }
 
 .form-claro .form-msg.err { color: #a84b49; } /* o #e8a0a0 some no paper */
 .form-claro .form-msg.ok { color: var(--sky-deep); }
+/* o aviso de envio ocupa duas linhas — limitar a medida mantém legível */
+.form-claro .form-msg { max-width: 46ch; line-height: 1.5; }
 
 .form-claro .success-card { border-color: var(--sky-deep); }
 .form-claro .success-card h3 { color: var(--sky-deep); }

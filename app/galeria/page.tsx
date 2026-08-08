@@ -14,6 +14,13 @@ type Foto = {
 };
 type Resposta = { fotos: Foto[]; proximoCursor: string | null };
 
+/** Quantos placeholders mostrar enquanto uma página está a caminho. */
+const ESQUELETOS = 6;
+
+/** Fotos antigas não têm dimensões gravadas — 3/4 é o retrato típico. */
+const proporcao = (f: Foto) =>
+  f.largura && f.altura ? `${f.largura} / ${f.altura}` : "3 / 4";
+
 export default function GaleriaPage() {
   const [fotos, setFotos] = useState<Foto[]>([]);
   const [inicial, setInicial] = useState(true);
@@ -94,37 +101,59 @@ export default function GaleriaPage() {
           <p className="eyebrow">Da festa</p>
           <h2>Galeria</h2>
 
-          {inicial && <p className="admin-vazio">Carregando…</p>}
           {vazio && (
             <p className="admin-vazio">Nenhuma foto ainda. Seja o primeiro!</p>
           )}
 
-          {fotos.length > 0 && (
-            /* Filhos <img> diretos: as regras miram `.look-grid img`, e um
-               wrapper quebraria o break-inside das colunas. */
+          {(fotos.length > 0 || carregando) && (
             <div className="look-grid">
               {fotos.map((f) => (
-                /* width/height reservam o espaço antes do download: sem eles o
-                   grid colapsa e a sentinela puxa todas as páginas de uma vez */
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img
+                <figure
                   key={f.id}
-                  src={f.url}
-                  alt="Foto da festa"
-                  loading="lazy"
-                  width={f.largura ?? undefined}
-                  height={f.altura ?? undefined}
-                />
+                  className="foto-tile"
+                  style={{ aspectRatio: proporcao(f) }}
+                >
+                  <span className="esqueleto-brilho" aria-hidden="true" />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={f.url}
+                    alt="Foto da festa"
+                    loading="lazy"
+                    /* classe direto no DOM em vez de estado: com 130 fotos,
+                       um setState por imagem carregada re-renderiza a lista
+                       inteira 130 vezes */
+                    onLoad={(e) =>
+                      e.currentTarget.parentElement?.classList.add("carregada")
+                    }
+                    onError={(e) =>
+                      e.currentTarget.parentElement?.classList.add("carregada")
+                    }
+                  />
+                </figure>
               ))}
+
+              {carregando &&
+                Array.from({ length: ESQUELETOS }, (_, i) => (
+                  <div
+                    key={`esqueleto-${i}`}
+                    className="foto-tile"
+                    style={{ aspectRatio: "3 / 4" }}
+                    aria-hidden="true"
+                  >
+                    <span className="esqueleto-brilho" />
+                  </div>
+                ))}
             </div>
+          )}
+
+          {carregando && (
+            <p className="galeria-status" role="status" aria-live="polite">
+              Carregando fotos…
+            </p>
           )}
 
           {/* Alvo do observer: precisa existir no DOM antes do fim da lista. */}
           <div ref={sentinelaRef} aria-hidden="true" />
-
-          {carregando && !inicial && (
-            <p className="galeria-status">Carregando mais…</p>
-          )}
 
           {erro && (
             <p className="galeria-status">

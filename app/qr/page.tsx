@@ -4,8 +4,18 @@ import Rails from "@/components/Rails";
 
 export const metadata = { title: "QR — Mande uma foto" };
 
+/**
+ * O QR vai ser impresso e colado na mesa — não pode apontar para uma URL
+ * efêmera. `VERCEL_URL` é o endereço daquele deploy específico
+ * (convite-marina-r4qhaevdo-….vercel.app), que muda a cada publicação e foi o
+ * que gerou o QR errado. `VERCEL_PROJECT_PRODUCTION_URL` é o domínio estável
+ * de produção, então vem antes dele.
+ */
 function baseUrl() {
   if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL;
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  }
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
   return "http://localhost:3000";
 }

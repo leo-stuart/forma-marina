@@ -62,6 +62,11 @@ export default function FotoPage() {
 
     setEnviando(true);
     setProgresso(0);
+    // A foto sobe em resolução original, então a espera é real — e na 4G da
+    // festa dá tempo de o convidado achar que travou e fechar a aba.
+    setMsg(
+      "Não feche a página. Estamos enviando sua foto — leva só alguns segundos."
+    );
 
     try {
       const resp = await fetch("/api/fotos", {
@@ -187,7 +192,9 @@ export default function FotoPage() {
                 )}
 
                 <p
-                  className={"form-msg" + (erro ? " err" : "")}
+                  className={
+                    "form-msg" + (erro ? " err" : enviando ? " ok" : "")
+                  }
                   role="status"
                   aria-live="polite"
                 >
