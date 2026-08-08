@@ -189,6 +189,11 @@ export default function FotoPage() {
                     maxLength={120}
                     ref={autorRef}
                   />
+                  {/* O nome aparece para quem abrir a foto na galeria — quem
+                      escreve precisa saber disso antes de escrever. */}
+                  <p className="campo-dica">
+                    Aparece na galeria, junto da sua foto
+                  </p>
                 </div>
 
                 <button

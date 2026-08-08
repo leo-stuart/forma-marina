@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import FotoModal from "@/components/FotoModal";
 import Rails from "@/components/Rails";
 import { APP_TOKEN } from "@/lib/supabaseBrowser";
 
@@ -61,6 +62,10 @@ export default function GaleriaPage() {
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState(false);
   const [fim, setFim] = useState(false);
+
+  // Um estado só, mexido por clique do convidado — não confundir com o
+  // cuidado do onLoad logo abaixo, que é por imagem carregada.
+  const [aberta, setAberta] = useState<Foto | null>(null);
 
   const cursorRef = useRef<string | null>(null);
   const ocupadoRef = useRef(false); // evita disparos concorrentes do observer
@@ -167,10 +172,13 @@ export default function GaleriaPage() {
                 <div className="galeria-coluna" key={`coluna-${i}`}>
                   {balde.map((item) =>
                     item.tipo === "foto" ? (
-                      <figure
+                      <button
                         key={item.chave}
+                        type="button"
                         className="foto-tile"
                         style={{ aspectRatio: proporcao(item.foto) }}
+                        aria-label="Ver foto em tamanho maior"
+                        onClick={() => setAberta(item.foto)}
                       >
                         <span className="esqueleto-brilho" aria-hidden="true" />
                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -192,7 +200,7 @@ export default function GaleriaPage() {
                             )
                           }
                         />
-                      </figure>
+                      </button>
                     ) : (
                       <div
                         key={item.chave}
@@ -243,6 +251,12 @@ export default function GaleriaPage() {
           </p>
         </div>
       </section>
+
+      {/* Desmontar ao fechar, em vez de esconder: a URL assinada do original
+          vale 1h, então o próximo clique busca uma nova. */}
+      {aberta && (
+        <FotoModal foto={aberta} aoFechar={() => setAberta(null)} />
+      )}
     </>
   );
 }

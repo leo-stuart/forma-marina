@@ -4,7 +4,7 @@ import { BUCKET, supabaseAdmin, tokenInvalido } from "@/lib/supabaseServer";
 export const dynamic = "force-dynamic"; // URLs assinadas expiram — nunca cachear
 
 const VALIDADE = 3600;
-const LIMITE_PADRAO = 24;
+const LIMITE_PADRAO = 10;
 const LIMITE_MAX = 48;
 
 // O cursor viaja em base64url só para não sofrer com o "+" do fuso na query.
@@ -36,7 +36,9 @@ export async function GET(req: Request) {
   // Paginação por keyset, não por offset: fotos novas chegam durante a festa e
   // um offset faria o convidado ver repetidas ou pular fotos ao rolar.
   // A lista de colunas continua sendo a garantia de privacidade — `autor` não
-  // é lido, então não tem como vazar por aqui.
+  // é lido, então não tem como vazar por aqui. Quem mostra o nome é
+  // /api/fotos/[id], uma foto por vez, quando o convidado abre a foto: um
+  // fetch só nesta rota não pode virar a lista de nomes da festa inteira.
   let consulta = supabase
     .from("fotos")
     .select("id, thumb_path, largura, altura, criado_em")
