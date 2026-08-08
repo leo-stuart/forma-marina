@@ -548,15 +548,23 @@ td.num { font-variant-numeric: tabular-nums; }
    vazia. Aqui vira grid explícito: duas colunas sempre, independente da
    quantidade. Escopo em .pagina-compacta porque o guia de looks do convite
    usa o mesmo .look-grid e não pode mudar. */
+/* Colunas independentes em vez de grid: num grid a linha inteira fica com a
+   altura do item mais alto, então uma foto baixa abre um buraco embaixo dela
+   até a próxima linha. Aqui cada coluna empilha sozinha e o mesmo `gap` vale
+   entre colunas e entre fotos — o espaçamento fica uniforme em toda a grade.
+   Qual foto vai para qual coluna é decidido no componente. */
 .pagina-compacta .look-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  display: flex;
   gap: clamp(14px, 2.5vw, 28px);
-  align-items: start;
+  align-items: flex-start;
   padding-bottom: clamp(16px, 2.5vh, 28px);
 }
-@media (min-width: 900px) {
-  .pagina-compacta .look-grid { grid-template-columns: repeat(3, 1fr); }
+.galeria-coluna {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(14px, 2.5vw, 28px);
 }
 
 /* A proporção fica na célula, não na imagem: o espaço é reservado antes do

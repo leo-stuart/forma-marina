@@ -18,8 +18,42 @@ type Resposta = { fotos: Foto[]; proximoCursor: string | null };
 const ESQUELETOS = 6;
 
 /** Fotos antigas não têm dimensões gravadas — 3/4 é o retrato típico. */
+const RAZAO_PADRAO = 4 / 3;
+
 const proporcao = (f: Foto) =>
   f.largura && f.altura ? `${f.largura} / ${f.altura}` : "3 / 4";
+
+/** Altura relativa a uma coluna de largura 1. */
+const razao = (f: Foto) =>
+  f.largura && f.altura ? f.altura / f.largura : RAZAO_PADRAO;
+
+type Item =
+  | { tipo: "foto"; chave: string; foto: Foto }
+  | { tipo: "esqueleto"; chave: string };
+
+/**
+ * Distribuição estilo Pinterest: cada item vai para a coluna mais curta no
+ * momento. Um grid CSS não serve aqui porque alinha linhas — uma foto baixa
+ * ao lado de uma alta deixa um buraco embaixo dela até a linha seguinte.
+ *
+ * As alturas saem das dimensões já gravadas no banco, então isso roda na
+ * renderização, sem medir o DOM nem esperar as imagens carregarem.
+ */
+function distribuir(itens: Item[], colunas: number): Item[][] {
+  const baldes: Item[][] = Array.from({ length: colunas }, () => []);
+  const alturas = new Array<number>(colunas).fill(0);
+
+  for (const item of itens) {
+    let menor = 0;
+    for (let i = 1; i < colunas; i++) {
+      if (alturas[i] < alturas[menor]) menor = i;
+    }
+    baldes[menor].push(item);
+    alturas[menor] +=
+      item.tipo === "foto" ? razao(item.foto) : RAZAO_PADRAO;
+  }
+  return baldes;
+}
 
 export default function GaleriaPage() {
   const [fotos, setFotos] = useState<Foto[]>([]);
@@ -91,7 +125,29 @@ export default function GaleriaPage() {
     return () => io.disconnect();
   }, [carregarMais, fim, erro, fotos.length]);
 
+  // 2 colunas no celular, 3 a partir de 900px — o mesmo ponto de quebra que o
+  // resto do site usa. Precisa ser JS porque a distribuição depende da contagem.
+  const [colunas, setColunas] = useState(2);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 900px)");
+    const aplicar = () => setColunas(mq.matches ? 3 : 2);
+    aplicar();
+    mq.addEventListener("change", aplicar);
+    return () => mq.removeEventListener("change", aplicar);
+  }, []);
+
   const vazio = !inicial && fotos.length === 0 && !erro;
+
+  const itens: Item[] = [
+    ...fotos.map((f) => ({ tipo: "foto" as const, chave: f.id, foto: f })),
+    ...(carregando
+      ? Array.from({ length: ESQUELETOS }, (_, i) => ({
+          tipo: "esqueleto" as const,
+          chave: `esqueleto-${i}`,
+        }))
+      : []),
+  ];
+  const baldes = distribuir(itens, colunas);
 
   return (
     <>
@@ -105,44 +161,51 @@ export default function GaleriaPage() {
             <p className="admin-vazio">Nenhuma foto ainda. Seja o primeiro!</p>
           )}
 
-          {(fotos.length > 0 || carregando) && (
+          {itens.length > 0 && (
             <div className="look-grid">
-              {fotos.map((f) => (
-                <figure
-                  key={f.id}
-                  className="foto-tile"
-                  style={{ aspectRatio: proporcao(f) }}
-                >
-                  <span className="esqueleto-brilho" aria-hidden="true" />
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={f.url}
-                    alt="Foto da festa"
-                    loading="lazy"
-                    /* classe direto no DOM em vez de estado: com 130 fotos,
-                       um setState por imagem carregada re-renderiza a lista
-                       inteira 130 vezes */
-                    onLoad={(e) =>
-                      e.currentTarget.parentElement?.classList.add("carregada")
-                    }
-                    onError={(e) =>
-                      e.currentTarget.parentElement?.classList.add("carregada")
-                    }
-                  />
-                </figure>
+              {baldes.map((balde, i) => (
+                <div className="galeria-coluna" key={`coluna-${i}`}>
+                  {balde.map((item) =>
+                    item.tipo === "foto" ? (
+                      <figure
+                        key={item.chave}
+                        className="foto-tile"
+                        style={{ aspectRatio: proporcao(item.foto) }}
+                      >
+                        <span className="esqueleto-brilho" aria-hidden="true" />
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={item.foto.url}
+                          alt="Foto da festa"
+                          loading="lazy"
+                          /* classe direto no DOM em vez de estado: com 130
+                             fotos, um setState por imagem carregada
+                             re-renderiza a lista inteira 130 vezes */
+                          onLoad={(e) =>
+                            e.currentTarget.parentElement?.classList.add(
+                              "carregada"
+                            )
+                          }
+                          onError={(e) =>
+                            e.currentTarget.parentElement?.classList.add(
+                              "carregada"
+                            )
+                          }
+                        />
+                      </figure>
+                    ) : (
+                      <div
+                        key={item.chave}
+                        className="foto-tile"
+                        style={{ aspectRatio: "3 / 4" }}
+                        aria-hidden="true"
+                      >
+                        <span className="esqueleto-brilho" />
+                      </div>
+                    )
+                  )}
+                </div>
               ))}
-
-              {carregando &&
-                Array.from({ length: ESQUELETOS }, (_, i) => (
-                  <div
-                    key={`esqueleto-${i}`}
-                    className="foto-tile"
-                    style={{ aspectRatio: "3 / 4" }}
-                    aria-hidden="true"
-                  >
-                    <span className="esqueleto-brilho" />
-                  </div>
-                ))}
             </div>
           )}
 
