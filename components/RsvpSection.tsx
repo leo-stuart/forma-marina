@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRef, useState } from "react";
 import { PLANILHA_URL, Rsvp, salvarRsvpLocal } from "@/lib/rsvp";
 
@@ -260,6 +261,10 @@ export default function RsvpSection() {
           <a className="inline-link" href="#look">
             Inspirações para o seu look →
           </a>
+          <br />
+          <Link className="inline-link" href="/foto">
+            Mande uma foto para a Marina →
+          </Link>
         </p>
       </div>
     </section>

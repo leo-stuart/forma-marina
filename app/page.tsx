@@ -4,6 +4,7 @@ import AdminPage from "@/components/AdminPage";
 import Detalhes from "@/components/Detalhes";
 import Hero from "@/components/Hero";
 import LookPage from "@/components/LookPage";
+import Rails from "@/components/Rails";
 import Rodape from "@/components/Rodape";
 import RsvpSection from "@/components/RsvpSection";
 import { useHashRoute } from "@/lib/useHashRoute";
@@ -15,7 +16,7 @@ export default function Page() {
 
   return (
     <>
-      <div className="rails" aria-hidden="true"></div>
+      <Rails />
 
       <Hero />
       <Detalhes />

@@ -536,3 +536,243 @@ td.num { font-variant-numeric: tabular-nums; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
   .reveal { opacity: 1; transform: none; }
 }
+/* ---------- fotos dos convidados: captura, prévia, galeria, QR ---------- */
+/* Bloco aditivo — nada acima foi alterado. Só tokens já existentes. */
+
+/* O `section` global reserva clamp(72px, 13vh, 140px) em cima e embaixo, que é
+   o respiro certo entre seções do convite mas vira vazio numa página própria. */
+.pagina-compacta { padding: clamp(30px, 5vh, 52px) 0 clamp(32px, 5vh, 56px); }
+.pagina-compacta .look-grid { padding-bottom: clamp(16px, 2.5vh, 28px); }
+/* os width/height do <img> reservam o espaço; height:auto mantém responsivo */
+.pagina-compacta .look-grid img { height: auto; }
+.pagina-compacta .look-cta { margin-top: clamp(22px, 3.5vh, 34px); }
+.pagina-compacta .look-cta .inline-link + .inline-link { margin-top: 10px; }
+
+.galeria-status {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  padding: clamp(18px, 3vh, 30px) 0;
+}
+/* <button> como link: o observer falhou, então precisa ser acionável */
+.como-link {
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--sky-deep);
+  padding: 0 0 2px;
+  cursor: pointer;
+  font-family: inherit;
+  margin-top: 0;
+}
+
+.captura-acoes { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+.captura-acoes + .captura-acoes { margin-top: 16px; }
+
+/* O .btn não declara line-height: <a> e <label> herdam o 1.6 do body, mas
+   <button> cai no "normal" do navegador (~1.2) e fica 6px mais baixo. Fixar
+   aqui, e não no .btn global, porque o convite mistura os dois e mudaria de
+   altura. O margin-bottom vem da regra global de `label` e desalinha a linha. */
+.form-claro .btn { line-height: 1.6; }
+.form-claro label.btn { margin-bottom: 0; }
+
+/* Hierarquia na página clara: "Tirar foto" usa o .btn padrão (ink sólido),
+   e o secundário vira contorno para não competir com ele. */
+.captura .btn.ghost {
+  background: transparent;
+  border-color: var(--line);
+  color: var(--ink);
+  backdrop-filter: none;
+}
+.captura .btn.ghost:hover, .captura .btn.ghost:focus-visible {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+.captura .btn:disabled { opacity: 0.5; cursor: wait; }
+
+/* mesma técnica do input de rádio em .attendance */
+.input-arquivo { position: absolute; opacity: 0; pointer-events: none; }
+.input-arquivo:focus-visible + .btn,
+label.btn:focus-within { outline: 2px solid var(--sky); outline-offset: 3px; }
+
+.visor {
+  display: none;
+  aspect-ratio: 3 / 4;
+  max-width: 420px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--ink);
+}
+.visor.ativo { display: block; }
+.visor video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.visor video.espelhado { transform: scaleX(-1); }
+
+/* ---------- controles da câmera ao vivo ---------- */
+.camera-controles {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  max-width: 420px;       /* alinhado ao visor */
+  padding-top: 20px;
+}
+.camera-controles > :first-child { justify-self: start; }
+.camera-controles > :last-child { justify-self: end; }
+
+/* Obturador: o disco é a affordance universal de câmera, aqui reduzido ao
+   vocabulário do convite — anel de 1px e núcleo sólido, sem cromo. */
+.obturador {
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  border: 1px solid var(--ink);
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: border-color 0.2s ease;
+}
+.obturador::after {
+  content: "";
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--ink);
+  transition: transform 0.18s ease, background 0.18s ease;
+}
+.obturador:hover, .obturador:focus-visible { border-color: var(--sky-deep); }
+.obturador:hover::after, .obturador:focus-visible::after {
+  background: var(--sky-deep);
+  transform: scale(0.9);
+}
+.obturador:active::after { transform: scale(0.82); }
+.obturador:focus-visible { outline: none; }
+
+.camera-secundario {
+  background: none;
+  border: none;
+  padding: 6px 0;
+  cursor: pointer;
+  font-family: var(--sans);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  transition: color 0.2s ease;
+}
+.camera-secundario:hover, .camera-secundario:focus-visible { color: var(--ink); }
+
+.captura-aviso {
+  margin-top: 16px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--sky-deep);
+  max-width: 42ch;
+}
+
+.previa {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  border: 1px solid var(--line-soft);
+  margin-bottom: 12px;
+}
+.previa-info {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.barra {
+  margin-top: 16px;
+  height: 2px;
+  max-width: 340px;
+  background: var(--line-soft);
+}
+.barra span {
+  display: block;
+  height: 100%;
+  background: var(--sky-deep);
+  transition: width 0.2s ease;
+}
+
+/* ---------- formulário sobre fundo claro ----------
+   label / input / textarea / .success-card são estilizados globalmente
+   assumindo a seção escura do RSVP. Estas regras só recolorem, e apenas
+   dentro de .form-claro — o RSVP do convite fica intacto. */
+/* :not(.btn) — o input de arquivo é um <label class="btn">, e recolorir aqui
+   venceria o .btn por especificidade, deixando texto escuro no botão escuro */
+.form-claro label:not(.btn) { color: var(--ink-soft); }
+.form-claro input[type="text"],
+.form-claro select,
+.form-claro textarea {
+  border-bottom-color: var(--line-soft);
+  color: var(--ink);
+}
+.form-claro input::placeholder,
+.form-claro textarea::placeholder { color: rgba(26, 25, 23, 0.35); }
+.form-claro input:focus,
+.form-claro select:focus,
+.form-claro textarea:focus { border-bottom-color: var(--sky-deep); }
+
+.form-claro .deadline {
+  font-size: 0.82rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--sky-deep);
+  font-weight: 700;
+  margin-bottom: clamp(32px, 5vh, 54px);
+}
+
+.form-claro .form-msg.err { color: #a84b49; } /* o #e8a0a0 some no paper */
+.form-claro .form-msg.ok { color: var(--sky-deep); }
+
+.form-claro .success-card { border-color: var(--sky-deep); }
+.form-claro .success-card h3 { color: var(--sky-deep); }
+.form-claro .success-card p { color: var(--ink-soft); }
+
+/* o hover padrão vai para paper — invisível numa página paper */
+.form-claro .btn-submit:hover:not(:disabled),
+.form-claro .btn-submit:focus-visible {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+/* ---------- página do QR ---------- */
+.qr-card {
+  margin-top: clamp(40px, 7vh, 64px);
+  border: 1px solid var(--line);
+  padding: clamp(28px, 5vw, 56px);
+  max-width: 560px;
+  text-align: center;
+}
+.qr-card h2 { margin-bottom: clamp(24px, 4vh, 40px); }
+.qr-code { margin: 0 auto; max-width: 340px; }
+.qr-code svg { width: 100%; height: auto; display: block; }
+.qr-url {
+  margin-top: 22px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  /* sem text-transform: o caminho é sensível a maiúsculas — /FOTO daria 404 */
+  color: var(--ink-soft);
+  word-break: break-all;
+}
+.qr-dica { margin-top: 28px; font-size: 0.8rem; color: var(--ink-soft); }
+
+@media print {
+  .rails, .nao-imprimir { display: none !important; }
+  .qr-page { padding: 0; }
+  .qr-card { border-color: #000; margin: 0 auto; max-width: 100%; }
+  body { background: #fff; color: #000; }
+  .qr-url { color: #000; }
+}
