@@ -28,7 +28,6 @@ export async function POST(req: Request) {
 
   let corpo: {
     autor?: unknown;
-    mensagem?: unknown;
     contentType?: unknown;
     tamanho?: unknown;
     largura?: unknown;
@@ -50,7 +49,6 @@ export async function POST(req: Request) {
   }
 
   const autor = String(corpo.autor ?? "").trim().slice(0, 120);
-  const mensagem = String(corpo.mensagem ?? "").trim().slice(0, 1000);
 
   // Dimensões da miniatura: opcionais, mas sem elas a galeria não consegue
   // reservar espaço antes da imagem chegar.
@@ -81,15 +79,16 @@ export async function POST(req: Request) {
     return erro("Não foi possível preparar o envio.", 500);
   }
 
-  // A linha entra antes de qualquer byte subir: se algo falhar depois, o que se
-  // perde é a foto, nunca a mensagem da Marina.
+  // A linha entra antes de qualquer byte subir. Se o upload falhar depois,
+  // sobra uma linha órfã — inofensiva, porque a galeria descarta as entradas
+  // sem objeto correspondente. Falhar aqui é barato: nada subiu ainda.
   const { error: erroInsert } = await supabase
     .from("fotos")
-    .insert({ path, thumb_path: thumbPath, largura, altura, autor, mensagem });
+    .insert({ path, thumb_path: thumbPath, largura, altura, autor });
 
   if (erroInsert) {
     console.error("insert em fotos falhou:", erroInsert);
-    return erro("Não foi possível registrar sua mensagem.", 500);
+    return erro("Não foi possível registrar sua foto.", 500);
   }
 
   return NextResponse.json({

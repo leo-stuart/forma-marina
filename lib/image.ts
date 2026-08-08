@@ -181,7 +181,7 @@ export type FotoPreparada = {
  * que HEIC é detectado, sem converter nada — e (b) gerar a miniatura da galeria.
  * O `original` sai daqui intacto, byte por byte.
  *
- * Roda logo após a captura, enquanto o convidado escreve a mensagem.
+ * Roda logo após a captura, enquanto o convidado confere a foto.
  */
 export async function prepararFoto(original: Blob): Promise<FotoPreparada> {
   const { fonte, width, height, liberar } = await decodificar(original);

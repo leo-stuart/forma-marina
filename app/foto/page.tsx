@@ -59,9 +59,6 @@ export default function FotoPage() {
     const autor = (
       form.elements.namedItem("autor") as HTMLInputElement
     ).value.trim();
-    const mensagem = (
-      form.elements.namedItem("mensagem") as HTMLTextAreaElement
-    ).value.trim();
 
     setEnviando(true);
     setProgresso(0);
@@ -72,7 +69,6 @@ export default function FotoPage() {
         headers: { "content-type": "application/json", "x-app-token": APP_TOKEN },
         body: JSON.stringify({
           autor,
-          mensagem,
           contentType: foto.original.type || "image/jpeg",
           tamanho: foto.original.size,
           largura: foto.thumbWidth,
@@ -170,13 +166,6 @@ export default function FotoPage() {
                 <div className="field">
                   <label htmlFor="autor">Seu nome</label>
                   <input type="text" id="autor" name="autor" autoComplete="name" />
-                </div>
-
-                <div className="field">
-                  <label htmlFor="mensagem">
-                    Uma mensagem para a Marina — só ela vai ler
-                  </label>
-                  <textarea id="mensagem" name="mensagem" maxLength={1000} />
                 </div>
 
                 <button

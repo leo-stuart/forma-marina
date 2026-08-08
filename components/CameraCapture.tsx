@@ -28,14 +28,14 @@ type Estado =
 
 const RECADOS: Record<Motivo, string> = {
   insecure:
-    "A câmera ao vivo precisa de HTTPS. Use o botão “Tirar foto” acima.",
+    "A câmera ao vivo precisa de HTTPS. Use o botão “Escolher foto” acima.",
   unsupported:
-    "Este navegador não abre a câmera ao vivo. Use o botão “Tirar foto” acima.",
+    "Este navegador não abre a câmera ao vivo. Use o botão “Escolher foto” acima.",
   denied:
-    "Não conseguimos abrir a câmera. Se você veio pelo WhatsApp, toque em ⋯ e escolha “Abrir no Safari” — ou use o botão “Tirar foto” acima.",
+    "Não conseguimos abrir a câmera. Se você veio pelo WhatsApp, toque em ⋯ e escolha “Abrir no Safari” — ou use o botão “Escolher foto” acima.",
   busy: "A câmera está sendo usada por outro app. Feche-o e tente de novo.",
   none: "Nenhuma câmera encontrada neste aparelho.",
-  other: "Não foi possível abrir a câmera. Use o botão “Tirar foto” acima.",
+  other: "Não foi possível abrir a câmera. Use o botão “Escolher foto” acima.",
 };
 
 function motivoDoErro(e: unknown): Motivo {
@@ -174,7 +174,7 @@ export default function CameraCapture({
         proporcaoCaixa: PROPORCAO,
         espelhar: facing === "user",
       });
-      pararStream(); // apaga o indicador laranja enquanto escrevem a mensagem
+      pararStream(); // apaga o indicador laranja enquanto o convidado confere a foto
       setEstado({ k: "idle" });
       await preparar(blob);
     } catch {
@@ -199,7 +199,6 @@ export default function CameraCapture({
         className="input-arquivo"
         type="file"
         accept="image/jpeg,image/png,image/webp"
-        capture="environment"
         onChange={aoEscolherArquivo}
         disabled={processando}
       />
@@ -208,8 +207,12 @@ export default function CameraCapture({
           único assunto da tela, como num app de câmera. */}
       {estado.k !== "live" && (
         <div className="captura-acoes">
-          {/* Caminho principal: app nativo da câmera, arquivo em resolução
-              total, e o único que funciona no navegador do WhatsApp. */}
+          {/* Sem `capture`: abre a galeria do aparelho, não a câmera. O
+              arquivo vem em resolução total, e o seletor do sistema costuma
+              oferecer "Tirar foto" como opção — o que mantém uma saída dentro
+              do navegador do WhatsApp, onde getUserMedia é negado em silêncio.
+              O `accept` explícito (em vez de image/*) mantém HEIC fora da
+              lista no Android, formato que não conseguimos decodificar. */}
           <label className="btn" htmlFor="arquivoFoto">
             {processando ? "Preparando…" : "Escolher foto"}
           </label>

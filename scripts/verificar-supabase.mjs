@@ -57,9 +57,11 @@ const pub = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 if (!pub) erro("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ausente");
 else {
   const anon = createClient(url, pub, { auth: { persistSession: false } });
-  const { data, error } = await anon.from("fotos").select("mensagem").limit(1);
-  if (error || !data || data.length === 0) ok("mensagens protegidas do anon");
-  else erro("ANON CONSEGUIU LER MENSAGENS — revise o RLS");
+  // Precisa ser uma coluna que existe: numa coluna inexistente o PostgREST
+  // erra, o ramo de erro dispara e o teste "passa" sem ter testado RLS.
+  const { data, error } = await anon.from("fotos").select("autor").limit(1);
+  if (error || !data || data.length === 0) ok("dados protegidos do anon");
+  else erro("ANON CONSEGUIU LER DADOS — revise o RLS");
 }
 
 console.log("\n4. Upload assinado, ida e volta");
