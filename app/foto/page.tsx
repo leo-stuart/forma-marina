@@ -24,6 +24,8 @@ export default function FotoPage() {
   const fotoRef = useRef<FotoPreparada | null>(null);
   fotoRef.current = foto;
 
+  const autorRef = useRef<HTMLInputElement>(null);
+
   // Convidados refazem a foto várias vezes — cada preview vira um object URL.
   useEffect(() => {
     return () => {
@@ -59,6 +61,14 @@ export default function FotoPage() {
     const autor = (
       form.elements.namedItem("autor") as HTMLInputElement
     ).value.trim();
+
+    // Mesmo padrão do RSVP: valida no envio, explica e leva o foco ao campo —
+    // em vez de um botão desabilitado que não diz o que está faltando.
+    if (!autor) {
+      aviso("Por favor, escreva seu nome antes de enviar.");
+      autorRef.current?.focus();
+      return;
+    }
 
     setEnviando(true);
     setProgresso(0);
@@ -169,8 +179,16 @@ export default function FotoPage() {
                 )}
 
                 <div className="field">
-                  <label htmlFor="autor">Seu nome</label>
-                  <input type="text" id="autor" name="autor" autoComplete="name" />
+                  <label htmlFor="autor">Seu nome *</label>
+                  <input
+                    type="text"
+                    id="autor"
+                    name="autor"
+                    autoComplete="name"
+                    required
+                    maxLength={120}
+                    ref={autorRef}
+                  />
                 </div>
 
                 <button

@@ -49,6 +49,7 @@ export async function POST(req: Request) {
   }
 
   const autor = String(corpo.autor ?? "").trim().slice(0, 120);
+  if (!autor) return erro("Escreva seu nome antes de enviar.", 400);
 
   // Dimensões da miniatura: opcionais, mas sem elas a galeria não consegue
   // reservar espaço antes da imagem chegar.
