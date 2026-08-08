@@ -148,10 +148,6 @@ export default function GaleriaPage() {
             <Link className="inline-link" href="/foto">
               Mandar uma foto →
             </Link>
-            <br />
-            <Link className="inline-link" href="/">
-              ← Voltar ao convite
-            </Link>
           </p>
         </div>
       </section>
