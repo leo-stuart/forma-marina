@@ -193,23 +193,26 @@ export default function CameraCapture({
 
   return (
     <div className="captura">
-      <div className="captura-acoes">
-        {/* Caminho principal: app nativo da câmera, arquivo em resolução total,
-            e o único que funciona dentro do navegador do WhatsApp. */}
-        <label className="btn" htmlFor="arquivoFoto">
-          {processando ? "Preparando…" : "Escolher foto"}
-        </label>
-        <input
-          id="arquivoFoto"
-          className="input-arquivo"
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          capture="environment"
-          onChange={aoEscolherArquivo}
-          disabled={processando}
-        />
+      {/* Sempre montado: o <label> aponta para ele por htmlFor. */}
+      <input
+        id="arquivoFoto"
+        className="input-arquivo"
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        capture="environment"
+        onChange={aoEscolherArquivo}
+        disabled={processando}
+      />
 
-        {estado.k !== "live" && (
+      {/* Com a câmera ligada as opções de entrada saem de cena: o visor vira o
+          único assunto da tela, como num app de câmera. */}
+      {estado.k !== "live" && (
+        <div className="captura-acoes">
+          {/* Caminho principal: app nativo da câmera, arquivo em resolução
+              total, e o único que funciona no navegador do WhatsApp. */}
+          <label className="btn" htmlFor="arquivoFoto">
+            {processando ? "Preparando…" : "Escolher foto"}
+          </label>
           <button
             type="button"
             className="btn ghost"
@@ -218,8 +221,8 @@ export default function CameraCapture({
           >
             {estado.k === "requesting" ? "Abrindo…" : "Usar câmera ao vivo"}
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* O <video> fica sempre no DOM, mas a caixa do visor só aparece com o
           stream resolvido — visor renderizado por otimismo vira retângulo preto. */}
@@ -234,24 +237,33 @@ export default function CameraCapture({
       </div>
 
       {estado.k === "live" && (
-        <div className="captura-acoes">
-          <button type="button" className="btn" onClick={disparar}>
-            Capturar
-          </button>
-          {temDuas && (
+        /* grade 1fr / auto / 1fr: o obturador fica centrado no visor mesmo
+           quando não há botão de virar câmera */
+        <div className="camera-controles">
+          {temDuas ? (
             <button
               type="button"
-              className="btn ghost"
+              className="camera-secundario"
               onClick={() =>
                 ligar(facing === "environment" ? "user" : "environment")
               }
             >
-              Virar câmera
+              Virar
             </button>
+          ) : (
+            <span />
           )}
+
           <button
             type="button"
-            className="btn ghost"
+            className="obturador"
+            onClick={disparar}
+            aria-label="Capturar foto"
+          />
+
+          <button
+            type="button"
+            className="camera-secundario"
             onClick={() => {
               pararStream();
               setEstado({ k: "idle" });
